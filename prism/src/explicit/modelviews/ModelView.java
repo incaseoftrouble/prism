@@ -1,51 +1,47 @@
 //==============================================================================
-//	
+//
 //	Copyright (c) 2016-
 //	Authors:
 //	* Steffen Maercker <maercker@tcs.inf.tu-dresden.de> (TU Dresden)
 //	* Joachim Klein <klein@tcs.inf.tu-dresden.de> (TU Dresden)
-//	
+//
 //------------------------------------------------------------------------------
-//	
+//
 //	This file is part of PRISM.
-//	
+//
 //	PRISM is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
 //	the Free Software Foundation; either version 2 of the License, or
 //	(at your option) any later version.
-//	
+//
 //	PRISM is distributed in the hope that it will be useful,
 //	but WITHOUT ANY WARRANTY; without even the implied warranty of
 //	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //	GNU General Public License for more details.
-//	
+//
 //	You should have received a copy of the GNU General Public License
 //	along with PRISM; if not, write to the Free Software Foundation,
 //	Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-//	
+//
 //==============================================================================
 
 package explicit.modelviews;
+
+import common.IterableBitSet;
+import common.IterableStateSet;
+import common.iterable.FilteringIterable;
+import explicit.Model;
+import explicit.PredecessorRelation;
+import explicit.StateValues;
+import it.unimi.dsi.fastutil.ints.IntIterable;
+import parser.State;
+import parser.VarList;
+import prism.*;
 
 import java.io.File;
 import java.util.BitSet;
 import java.util.List;
 import java.util.PrimitiveIterator.OfInt;
-
-import common.iterable.FilteringIterable;
-import common.IterableBitSet;
-import common.iterable.IterableInt;
-import common.IterableStateSet;
-import explicit.Model;
-import explicit.PredecessorRelation;
-import explicit.StateValues;
-import parser.State;
-import parser.VarList;
-import prism.Prism;
-import prism.PrismComponent;
-import prism.PrismException;
-import prism.PrismFileLog;
-import prism.PrismLog;
 
 /**
  * Base class for an DTMCView or MDPView,
@@ -80,7 +76,7 @@ public abstract class ModelView implements Model
 	}
 
 	@Override
-	public IterableInt getDeadlockStates()
+	public IntIterable getDeadlockStates()
 	{
 		return new IterableBitSet(deadlockStates);
 	}
@@ -117,9 +113,9 @@ public abstract class ModelView implements Model
 		}
 	}
 
-	public IterableInt findDeadlocks(final BitSet except)
+	public IntIterable findDeadlocks(final BitSet except)
 	{
-		IterableInt states = new IterableStateSet(except, getNumStates(), true);
+		IntIterable states = new IterableStateSet(except, getNumStates(), true);
 		return new FilteringIterable.OfInt(states, state -> !getSuccessorsIterator(state).hasNext());
 	}
 

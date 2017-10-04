@@ -1,32 +1,33 @@
 //==============================================================================
-//	
+//
 //	Copyright (c) 2016-
 //	Authors:
 //	* Joachim Klein <klein@tcs.inf.tu-dresden.de> (TU Dresden)
-//	
+//
 //------------------------------------------------------------------------------
-//	
+//
 //	This file is part of PRISM.
-//	
+//
 //	PRISM is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
 //	the Free Software Foundation; either version 2 of the License, or
 //	(at your option) any later version.
-//	
+//
 //	PRISM is distributed in the hope that it will be useful,
 //	but WITHOUT ANY WARRANTY; without even the implied warranty of
 //	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //	GNU General Public License for more details.
-//	
+//
 //	You should have received a copy of the GNU General Public License
 //	along with PRISM; if not, write to the Free Software Foundation,
 //	Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-//	
+//
 //==============================================================================
 
 package explicit;
 
-import common.IntSet;
+import de.tum.in.naturals.set.NatBitSet;
+import de.tum.in.naturals.set.NatSet;
 import explicit.rewards.MCRewards;
 import explicit.rewards.MDPRewards;
 import prism.PrismException;
@@ -55,11 +56,11 @@ public class IterationMethodGS extends IterationMethod {
 	{
 		return new SingleVectorIterationValIter(dtmc) {
 			@Override
-			public boolean iterateAndCheckConvergence(IntSet states)
+			public boolean iterateAndCheckConvergence(NatSet states)
 			{
 				// Matrix-vector multiply
 				double maxDiff = dtmc.mvMultGS(soln,
-				                               backwards ? states.reversedIterator() : states.iterator(),
+				                               backwards ? states.reverseIterator() : states.iterator(),
 				                               absolute);
 
 				// Check termination
@@ -73,11 +74,11 @@ public class IterationMethodGS extends IterationMethod {
 	{
 		return new SingleVectorIterationIntervalIter(dtmc) {
 			@Override
-			public void iterate(IntSet states) throws PrismException
+			public void iterate(NatSet states) throws PrismException
 			{
 				// Matrix-vector multiply
 				dtmc.mvMultGSIntervalIter(soln,
-				                          backwards ? states.reversedIterator() : states.iterator(),
+				                          backwards ? states.reverseIterator() : states.iterator(),
 				                          enforceMonotonicity,
 				                          checkMonotonicity,
 				                          fromBelow);
@@ -90,12 +91,12 @@ public class IterationMethodGS extends IterationMethod {
 	{
 		return new SingleVectorIterationValIter(dtmc) {
 			@Override
-			public boolean iterateAndCheckConvergence(IntSet states)
+			public boolean iterateAndCheckConvergence(NatSet states)
 			{
 				// Matrix-vector multiply
 				double maxDiff = dtmc.mvMultRewGS(soln,
 				                                  rew,
-				                                  backwards ? states.reversedIterator() : states.iterator(),
+				                                  backwards ? states.reverseIterator() : states.iterator(),
 				                                  absolute);
 
 				// Check termination
@@ -109,12 +110,12 @@ public class IterationMethodGS extends IterationMethod {
 	{
 		return new SingleVectorIterationIntervalIter(dtmc) {
 			@Override
-			public void iterate(IntSet states) throws PrismException
+			public void iterate(NatSet states) throws PrismException
 			{
 				// Matrix-vector multiply
 				dtmc.mvMultRewGSIntervalIter(soln,
 					                          rew,
-					                          backwards ? states.reversedIterator() : states.iterator(),
+					                          backwards ? states.reverseIterator() : states.iterator(),
 					                          enforceMonotonicity,
 					                          checkMonotonicity,
 					                          fromBelow);
@@ -127,12 +128,12 @@ public class IterationMethodGS extends IterationMethod {
 	{
 		return new SingleVectorIterationValIter(mdp) {
 			@Override
-			public boolean iterateAndCheckConvergence(IntSet states)
+			public boolean iterateAndCheckConvergence(NatSet states)
 			{
 				// Matrix-vector multiply
 				double maxDiff = mdp.mvMultGSMinMax(soln,
 				                                    min,
-				                                    backwards ? states.reversedIterator() : states.iterator(),
+				                                    backwards ? states.reverseIterator() : states.iterator(),
 				                                    absolute,
 				                                    strat);
 
@@ -148,14 +149,14 @@ public class IterationMethodGS extends IterationMethod {
 	{
 		return new SingleVectorIterationIntervalIter(mdp) {
 			@Override
-			public void iterate(IntSet states)
+			public void iterate(NatSet states)
 			{
 				// TODO: check monotonic not yet supported
 
 				// Matrix-vector multiply
 				mdp.mvMultGSMinMaxIntervalIter(soln,
 				                               min,
-				                               backwards ? states.reversedIterator() : states.iterator(),
+				                               backwards ? states.reverseIterator() : states.iterator(),
 				                               strat,
 				                               enforceMonotonicity,
 				                               fromBelow);
@@ -168,13 +169,13 @@ public class IterationMethodGS extends IterationMethod {
 	{
 		return new SingleVectorIterationValIter(mdp) {
 			@Override
-			public boolean iterateAndCheckConvergence(IntSet states)
+			public boolean iterateAndCheckConvergence(NatSet states)
 			{
 				// Matrix-vector multiply
 				double maxDiff = mdp.mvMultRewGSMinMax(soln,
 				                                       rewards,
 				                                       min,
-				                                       backwards ? states.reversedIterator() : states.iterator(),
+				                                       backwards ? states.reverseIterator() : states.iterator(),
 				                                       absolute,
 				                                       strat);
 
@@ -190,7 +191,7 @@ public class IterationMethodGS extends IterationMethod {
 	{
 		return new SingleVectorIterationIntervalIter(mdp) {
 			@Override
-			public void iterate(IntSet states)
+			public void iterate(NatSet states)
 			{
 				// TODO: check monotonic not yet supported
 
@@ -198,7 +199,7 @@ public class IterationMethodGS extends IterationMethod {
 				mdp.mvMultRewGSMinMaxIntervalIter(soln,
 				                                  rewards,
 				                                  min,
-				                                  backwards ? states.reversedIterator() : states.iterator(),
+				                                  backwards ? states.reverseIterator() : states.iterator(),
 				                                  strat,
 				                                  enforceMonotonicity,
 				                                  fromBelow);

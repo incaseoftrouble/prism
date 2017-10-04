@@ -1,44 +1,43 @@
 //==============================================================================
-//	
+//
 //	Copyright (c) 2016-
 //	Authors:
 //	* Steffen Maercker <maercker@tcs.inf.tu-dresden.de> (TU Dresden)
 //	* Joachim Klein <klein@tcs.inf.tu-dresden.de> (TU Dresden)
-//	
+//
 //------------------------------------------------------------------------------
-//	
+//
 //	This file is part of PRISM.
-//	
+//
 //	PRISM is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
 //	the Free Software Foundation; either version 2 of the License, or
 //	(at your option) any later version.
-//	
+//
 //	PRISM is distributed in the hope that it will be useful,
 //	but WITHOUT ANY WARRANTY; without even the implied warranty of
 //	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //	GNU General Public License for more details.
-//	
+//
 //	You should have received a copy of the GNU General Public License
 //	along with PRISM; if not, write to the Free Software Foundation,
 //	Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-//	
+//
 //==============================================================================
 
 package common;
 
+import common.iterable.FilteringIterator;
+import common.iterable.MappingIterator;
+
 import java.util.Iterator;
+import java.util.PrimitiveIterator.OfDouble;
+import java.util.PrimitiveIterator.OfInt;
+import java.util.PrimitiveIterator.OfLong;
 import java.util.function.DoublePredicate;
 import java.util.function.IntPredicate;
 import java.util.function.LongPredicate;
 import java.util.function.Predicate;
-
-import common.iterable.FilteringIterator;
-import common.iterable.MappingIterator;
-
-import java.util.PrimitiveIterator.OfDouble;
-import java.util.PrimitiveIterator.OfInt;
-import java.util.PrimitiveIterator.OfLong;
 
 /** Convenience methods for performing operations on Iterators / Iterables */
 public class IteratorTools

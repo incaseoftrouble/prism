@@ -1,38 +1,40 @@
 //==============================================================================
-//	
+//
 //	Copyright (c) 2016-
 //	Authors:
 //	* Steffen Maercker <maercker@tcs.inf.tu-dresden.de> (TU Dresden)
 //	* Joachim Klein <klein@tcs.inf.tu-dresden.de> (TU Dresden)
-//	
+//
 //------------------------------------------------------------------------------
-//	
+//
 //	This file is part of PRISM.
-//	
+//
 //	PRISM is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
 //	the Free Software Foundation; either version 2 of the License, or
 //	(at your option) any later version.
-//	
+//
 //	PRISM is distributed in the hope that it will be useful,
 //	but WITHOUT ANY WARRANTY; without even the implied warranty of
 //	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //	GNU General Public License for more details.
-//	
+//
 //	You should have received a copy of the GNU General Public License
 //	along with PRISM; if not, write to the Free Software Foundation,
 //	Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-//	
+//
 //==============================================================================
 
 package common.iterable;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.PrimitiveIterator;
-import java.util.Set;
+import it.unimi.dsi.fastutil.doubles.DoubleIterable;
+import it.unimi.dsi.fastutil.doubles.DoubleIterator;
+import it.unimi.dsi.fastutil.ints.IntIterable;
+import it.unimi.dsi.fastutil.ints.IntIterator;
+import it.unimi.dsi.fastutil.longs.LongIterable;
+import it.unimi.dsi.fastutil.longs.LongIterator;
+
+import java.util.*;
 import java.util.function.DoublePredicate;
 import java.util.function.IntPredicate;
 import java.util.function.LongPredicate;
@@ -92,38 +94,38 @@ public abstract class FilteringIterator<T> implements Iterator<T>
 	public static <T> Iterator<T> dedupe(final Iterator<T> iterator)
 	{
 		final Set<T> elements = new HashSet<>();
-		return new FilteringIterator.Of<>(iterator, (Predicate<T>) elements::add);
+		return new FilteringIterator.Of<>(iterator, elements::add);
 	}
 
 	/**
 	 * Obtain filtering iterator for the given primitive int iterator,
 	 * filtering duplicate elements (via HashSet).
 	 */
-	public static OfInt dedupe(final PrimitiveIterator.OfInt iterator)
+	public static IntIterator dedupe(final PrimitiveIterator.OfInt iterator)
 	{
 		// TODO: use BitSet? Evaluate performance in practice...
 		final Set<Integer> elements = new HashSet<>();
-		return new FilteringIterator.OfInt(iterator, (IntPredicate) elements::add);
+		return new FilteringIterator.OfInt(iterator, elements::add);
 	}
 
 	/**
 	 * Obtain filtering iterator for the given primitive long iterator,
 	 * filtering duplicate elements (via HashSet).
 	 */
-	public static OfLong dedupe(final PrimitiveIterator.OfLong iterator)
+	public static LongIterator dedupe(final PrimitiveIterator.OfLong iterator)
 	{
 		final Set<Long> elements = new HashSet<>();
-		return new FilteringIterator.OfLong(iterator, (LongPredicate) elements::add);
+		return new FilteringIterator.OfLong(iterator, elements::add);
 	}
 
 	/**
 	 * Obtain filtering iterator for the given primitive double iterator,
 	 * filtering duplicate elements (via HashSet).
 	 */
-	public static OfDouble dedupe(final PrimitiveIterator.OfDouble iterator)
+	public static DoubleIterator dedupe(final PrimitiveIterator.OfDouble iterator)
 	{
 		final Set<Double> elements = new HashSet<>();
-		return new FilteringIterator.OfDouble(iterator, (DoublePredicate) elements::add);
+		return new FilteringIterator.OfDouble(iterator, elements::add);
 	}
 
 	public static class Of<T> extends FilteringIterator<T>
@@ -166,12 +168,12 @@ public abstract class FilteringIterator<T> implements Iterator<T>
 		}
 	}
 
-	public static class OfInt extends FilteringIterator<Integer> implements PrimitiveIterator.OfInt
+	public static class OfInt extends FilteringIterator<Integer> implements IntIterator
 	{
 		protected final IntPredicate predicate;
 		private int next;
 
-		public OfInt(IterableInt iterable, IntPredicate predicate)
+		public OfInt(IntIterable iterable, IntPredicate predicate)
 		{
 			this(iterable.iterator(), predicate);
 		}
@@ -205,12 +207,12 @@ public abstract class FilteringIterator<T> implements Iterator<T>
 		}
 	}
 
-	public static class OfLong extends FilteringIterator<Long> implements PrimitiveIterator.OfLong
+	public static class OfLong extends FilteringIterator<Long> implements LongIterator
 	{
 		protected final LongPredicate predicate;
 		private long next;
 
-		public OfLong(IterableLong iterable, LongPredicate predicate)
+		public OfLong(LongIterable iterable, LongPredicate predicate)
 		{
 			this(iterable.iterator(), predicate);
 		}
@@ -244,12 +246,12 @@ public abstract class FilteringIterator<T> implements Iterator<T>
 		}
 	}
 
-	public static class OfDouble extends FilteringIterator<Double> implements PrimitiveIterator.OfDouble
+	public static class OfDouble extends FilteringIterator<Double> implements DoubleIterator
 	{
 		protected final DoublePredicate predicate;
 		private double next;
 
-		public OfDouble(IterableDouble iterable, DoublePredicate predicate)
+		public OfDouble(DoubleIterable iterable, DoublePredicate predicate)
 		{
 			this(iterable.iterator(), predicate);
 		}

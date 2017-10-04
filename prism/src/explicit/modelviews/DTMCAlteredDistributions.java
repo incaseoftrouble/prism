@@ -1,47 +1,42 @@
 //==============================================================================
-//	
+//
 //	Copyright (c) 2016-
 //	Authors:
 //	* Steffen Maercker <maercker@tcs.inf.tu-dresden.de> (TU Dresden)
 //	* Joachim Klein <klein@tcs.inf.tu-dresden.de> (TU Dresden)
-//	
+//
 //------------------------------------------------------------------------------
-//	
+//
 //	This file is part of PRISM.
-//	
+//
 //	PRISM is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
 //	the Free Software Foundation; either version 2 of the License, or
 //	(at your option) any later version.
-//	
+//
 //	PRISM is distributed in the hope that it will be useful,
 //	but WITHOUT ANY WARRANTY; without even the implied warranty of
 //	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //	GNU General Public License for more details.
-//	
+//
 //	You should have received a copy of the GNU General Public License
 //	along with PRISM; if not, write to the Free Software Foundation,
 //	Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-//	
+//
 //==============================================================================
 
 package explicit.modelviews;
 
-import java.util.AbstractMap;
-import java.util.BitSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.function.IntFunction;
-import java.util.function.Predicate;
-
 import common.iterable.FilteringIterator;
-import common.iterable.SingletonIterator;
+import explicit.DTMC;
 import parser.State;
 import parser.Values;
 import parser.VarList;
-import explicit.DTMC;
+
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.function.IntFunction;
+import java.util.function.Predicate;
 
 /**
  * A view of a DTMC where for selected states the transitions are changed.
@@ -213,7 +208,7 @@ public class DTMCAlteredDistributions extends DTMCView
 			{
 				if (states.get(state)) {
 					Entry<Integer,Double> transition = new AbstractMap.SimpleImmutableEntry<>(state, 1.0);
-					return new SingletonIterator.Of<>(transition);
+					return Collections.singleton(transition).iterator();
 				}
 				return null;
 			}

@@ -1,37 +1,36 @@
 //==============================================================================
-//	
+//
 //	Copyright (c) 2014-
 //	Authors:
 //	* Steffen Maercker <maercker@tcs.inf.tu-dresden.de> (TU Dresden)
 //	* Joachim Klein <klein@tcs.inf.tu-dresden.de> (TU Dresden)
-//	
+//
 //------------------------------------------------------------------------------
-//	
+//
 //	This file is part of PRISM.
-//	
+//
 //	PRISM is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
 //	the Free Software Foundation; either version 2 of the License, or
 //	(at your option) any later version.
-//	
+//
 //	PRISM is distributed in the hope that it will be useful,
 //	but WITHOUT ANY WARRANTY; without even the implied warranty of
 //	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //	GNU General Public License for more details.
-//	
+//
 //	You should have received a copy of the GNU General Public License
 //	along with PRISM; if not, write to the Free Software Foundation,
 //	Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-//	
+//
 //==============================================================================
 
 package common;
 
+import it.unimi.dsi.fastutil.ints.IntIterable;
+import it.unimi.dsi.fastutil.ints.IntIterator;
 import java.util.BitSet;
 import java.util.NoSuchElementException;
-import java.util.PrimitiveIterator.OfInt;
-
-import common.iterable.IterableInt;
 
 /**
  * Convenience class to loop easily over the set/clear bits of a BitSet.
@@ -39,7 +38,7 @@ import common.iterable.IterableInt;
  * For example:<br/><br/>
  * <code>for (Integer index : getSetBits(set)) { ... }</code><br/>
  */
-public class IterableBitSet implements IterableInt
+public class IterableBitSet implements IntIterable
 {
 	private BitSet set;
 	private boolean clearBits = false;
@@ -90,7 +89,7 @@ public class IterableBitSet implements IterableInt
 	}
 
 	/** Implementation of the iterator over the set bits */
-	private class SetBitsIterator implements OfInt
+	private class SetBitsIterator implements IntIterator
 	{
 		private int current = -1;
 		private int next = set.nextSetBit(0);
@@ -124,7 +123,7 @@ public class IterableBitSet implements IterableInt
 	}
 
 	/** Implementation of the iterator over the set bits (reverse order) */
-	private class SetBitsReversedIterator implements OfInt
+	private class SetBitsReversedIterator implements IntIterator
 	{
 		private int current = -1;
 		private int next = set.nextSetBit(0);
@@ -165,7 +164,7 @@ public class IterableBitSet implements IterableInt
 	}
 
 	/** Implementation of the iterator over the cleared bits, requires that {@code maxIndex != null} */
-	private class ClearBitsIterator implements OfInt
+	private class ClearBitsIterator implements IntIterator
 	{
 		private int current = -1;
 		private int next = set.nextClearBit(0);
@@ -199,7 +198,7 @@ public class IterableBitSet implements IterableInt
 	}
 
 	/** Implementation of the iterator over the clear bits (reverse order), requires that {@code maxIndex != null} */
-	private class ClearBitsReversedIterator implements OfInt
+	private class ClearBitsReversedIterator implements IntIterator
 	{
 		private int current = -1;
 		private int next = set.nextSetBit(0);
@@ -236,7 +235,7 @@ public class IterableBitSet implements IterableInt
 	}
 
 	@Override
-	public OfInt iterator()
+	public IntIterator iterator()
 	{
 		if (clearBits == false) {
 			if (reversed) {

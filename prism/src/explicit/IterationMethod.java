@@ -1,41 +1,43 @@
 //==============================================================================
-//	
+//
 //	Copyright (c) 2016-
 //	Authors:
 //	* Joachim Klein <klein@tcs.inf.tu-dresden.de> (TU Dresden)
-//	
+//
 //------------------------------------------------------------------------------
-//	
+//
 //	This file is part of PRISM.
-//	
+//
 //	PRISM is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
 //	the Free Software Foundation; either version 2 of the License, or
 //	(at your option) any later version.
-//	
+//
 //	PRISM is distributed in the hope that it will be useful,
 //	but WITHOUT ANY WARRANTY; without even the implied warranty of
 //	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //	GNU General Public License for more details.
-//	
+//
 //	You should have received a copy of the GNU General Public License
 //	along with PRISM; if not, write to the Free Software Foundation,
 //	Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-//	
+//
 //==============================================================================
 
 
 package explicit;
 
-import java.util.PrimitiveIterator;
-
-import common.IntSet;
 import common.PeriodicTimer;
+import de.tum.in.naturals.set.NatBitSets;
+import de.tum.in.naturals.set.NatSet;
 import explicit.rewards.MCRewards;
 import explicit.rewards.MDPRewards;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import prism.OptionsIntervalIteration;
 import prism.PrismException;
 import prism.PrismUtils;
+
+import java.util.PrimitiveIterator;
 
 /**
  * Abstract class that encapsulates the functionality for the different iteration methods
@@ -55,7 +57,7 @@ public abstract class IterationMethod {
 		public double[] getSolnVector();
 
 		/** Perform one iteration (over the set of states) and return true if convergence has been detected. */
-		public boolean iterateAndCheckConvergence(IntSet states) throws PrismException;
+		public boolean iterateAndCheckConvergence(NatSet states) throws PrismException;
 
 		/**
 		 * Notify that the given states are done (e.g., because the given SCC is finished
@@ -65,7 +67,7 @@ public abstract class IterationMethod {
 		 * states into the second vector, so that switching the vector does not return to
 		 * previous values.
 		 */
-		public void doneWith(IntSet states);
+		public void doneWith(NatSet states);
 
 		/**
 		 * Solve for a given singleton SCC consisting of {@code state} using {@code solver},
@@ -89,7 +91,7 @@ public abstract class IterationMethod {
 		public double[] getSolnVector();
 
 		/** Perform one iteration (over the set of states) */
-		public void iterate(IntSet states) throws PrismException;
+		public void iterate(NatSet states) throws PrismException;
 
 		/**
 		 * Notify that the given states are done (e.g., because the given SCC is finished
@@ -99,7 +101,7 @@ public abstract class IterationMethod {
 		 * states into the second vector, so that switching the vector does not return to
 		 * previous values.
 		 */
-		public void doneWith(IntSet states);
+		public void doneWith(NatSet states);
 
 		/**
 		 * Solve for a given singleton SCC consisting of {@code state} using {@code solver},
@@ -138,7 +140,7 @@ public abstract class IterationMethod {
 		}
 
 		/* see IterationValIter.doneWith() */
-		public void doneWith(IntSet states)
+		public void doneWith(NatSet states)
 		{
 			// single vector, nothing to do
 		}
@@ -214,7 +216,7 @@ public abstract class IterationMethod {
 		public abstract void doIterate(IntSet states) throws PrismException;
 
 		@Override
-		public void iterate(IntSet states) throws PrismException
+		public void iterate(NatSet states) throws PrismException
 		{
 			// do the iteration
 			doIterate(states);
@@ -230,7 +232,7 @@ public abstract class IterationMethod {
 		}
 
 		@Override
-		public boolean iterateAndCheckConvergence(IntSet states) throws PrismException
+		public boolean iterateAndCheckConvergence(NatSet states) throws PrismException
 		{
 			// do the iteration
 			doIterate(states);
@@ -250,7 +252,7 @@ public abstract class IterationMethod {
 		}
 
 		@Override
-		public void doneWith(IntSet states)
+		public void doneWith(NatSet states)
 		{
 			// we copy the values for the given states to the
 			// second vector, so that switching between vectors
@@ -399,7 +401,7 @@ public abstract class IterationMethod {
 	 * @return a ModelChecker result with the solution vector and statistics
 	 * @throws PrismException on non-convergence (if mc.errorOnNonConverge is set)
 	 */
-	public ModelCheckerResult doValueIteration(ProbModelChecker mc, String description, IterationValIter iteration, IntSet unknownStates, long startTime, ExportIterations iterationsExport) throws PrismException
+	public ModelCheckerResult doValueIteration(ProbModelChecker mc, String description, IterationValIter iteration, NatSet unknownStates, long startTime, ExportIterations iterationsExport) throws PrismException
 	{
 		int iters = 0;
 		final int maxIters = mc.maxIters;
@@ -487,7 +489,7 @@ public abstract class IterationMethod {
 				// no need to call doneWith(...), as solveSingletonSCC updates
 				// both vectors for two-iteration methods
 
-				mvCount += countTransitions(iterator.getModel(), IntSet.asIntSet(state));
+				mvCount += countTransitions(iterator.getModel(), NatBitSets.singleton(state));
 
 				iters++;
 				if (iterationsExport != null)
@@ -497,7 +499,7 @@ public abstract class IterationMethod {
 			} else {
 				// complex SCC: do VI
 				doneSCC = false;
-				IntSet statesForSCC = sccs.getStatesForSCC(scc);
+				NatSet statesForSCC = sccs.getStatesForSCC(scc);
 				int itersInSCC = 0;
 				// abort on convergence or if iterations *in this SCC* are above maxIters
 				while (!doneSCC && itersInSCC < maxIters) {
@@ -569,7 +571,7 @@ public abstract class IterationMethod {
 	 * @return a ModelChecker result with the solution vector and statistics
 	 * @throws PrismException on non-convergence (if mc.errorOnNonConverge is set)
 	 */
-	public ModelCheckerResult doIntervalIteration(ProbModelChecker mc, String description, IterationIntervalIter below, IterationIntervalIter above, IntSet unknownStates, long timer, ExportIterations iterationsExport) throws PrismException {
+	public ModelCheckerResult doIntervalIteration(ProbModelChecker mc, String description, IterationIntervalIter below, IterationIntervalIter above, NatSet unknownStates, long timer, ExportIterations iterationsExport) throws PrismException {
 		try {
 			// Start iterations
 			int iters = 0;
@@ -656,7 +658,7 @@ public abstract class IterationMethod {
 	 * @param below The iteration object for the value iteration from below
 	 * @param above The iteration object for the value iteration from above
 	 * @param singletonSCCSolver The solver for singleton SCCs
-	 * @param startTime The start time (for logging purposes, obtained from a call to System.currentTimeMillis())
+	 * @param timer The start time (for logging purposes, obtained from a call to System.currentTimeMillis())
 	 * @param iterationsExport an ExportIterations object (optional, ignored if null)
 	 * @return a ModelChecker result with the solution vector and statistics
 	 * @throws PrismException on non-convergence (if mc.errorOnNonConverge is set)
@@ -689,14 +691,14 @@ public abstract class IterationMethod {
 					// both vectors for two-iteration methods
 
 					iters++;
-					mvCount += 2 * countTransitions(below.getModel(), IntSet.asIntSet(state));
+					mvCount += 2 * countTransitions(below.getModel(), NatBitSets.singleton(state));
 
 					if (iterationsExport != null) {
 						iterationsExport.exportVector(below.getSolnVector(), 0);
 						iterationsExport.exportVector(above.getSolnVector(), 1);
 					}
 
-					intervalIterationCheckForProblems(below.getSolnVector(), above.getSolnVector(), IntSet.asIntSet(state).iterator());
+					intervalIterationCheckForProblems(below.getSolnVector(), above.getSolnVector(), NatBitSets.singleton(state).iterator());
 
 					doneSCC = true;
 				} else {
@@ -704,7 +706,7 @@ public abstract class IterationMethod {
 					doneSCC = false;
 					int itersInSCC = 0;
 
-					IntSet statesForSCC = sccs.getStatesForSCC(scc);
+					NatSet statesForSCC = sccs.getStatesForSCC(scc);
 
 					// Adjust upper bound by adding 2*epsilon,
 					// adding 1*epsilon would be fine, but we are a bit more conservative.
@@ -835,7 +837,7 @@ public abstract class IterationMethod {
 	 */
 	public static void twoVectorPostProcessing(double[] solnOld, double[] solnNew, IntSet states, boolean fromBelow, boolean enforceMonotonicity, boolean checkMonotonicity) throws PrismException
 	{
-		// TODO: use IntSet states
+		// TODO: use NatBitSet states
 		if (enforceMonotonicity)
 			if (fromBelow) {
 				PrismUtils.ensureMonotonicityFromBelow(solnOld, solnNew);

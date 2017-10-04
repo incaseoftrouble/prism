@@ -1,41 +1,43 @@
 //==============================================================================
-//	
+//
 //	Copyright (c) 2016-
 //	Authors:
 //	* Joachim Klein <klein@tcs.inf.tu-dresden.de> (TU Dresden)
-//	
+//
 //------------------------------------------------------------------------------
-//	
+//
 //	This file is part of PRISM.
-//	
+//
 //	PRISM is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
 //	the Free Software Foundation; either version 2 of the License, or
 //	(at your option) any later version.
-//	
+//
 //	PRISM is distributed in the hope that it will be useful,
 //	but WITHOUT ANY WARRANTY; without even the implied warranty of
 //	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //	GNU General Public License for more details.
-//	
+//
 //	You should have received a copy of the GNU General Public License
 //	along with PRISM; if not, write to the Free Software Foundation,
 //	Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-//	
+//
 //==============================================================================
 
 package explicit;
 
+import de.tum.in.naturals.set.AbstractUnmodifiableNatSet;
+import de.tum.in.naturals.set.NatSet;
+import it.unimi.dsi.fastutil.ints.IntIterator;
+import prism.PrismLog;
+
 import java.util.Arrays;
 import java.util.PrimitiveIterator.OfInt;
-
-import common.IntSet;
-import prism.PrismLog;
 
 /**
  * Storage of the SCC information, with a topological order of the SCCs.
  * <br>
- * Provides IntSet-based access to the states in the SCCs.
+ * Provides NatBitSet-based access to the states in the SCCs.
  */
 public class SCCInfo implements SCCConsumer
 {
@@ -133,69 +135,15 @@ public class SCCInfo implements SCCConsumer
 		return stateToSCCIndex[stateIndex];
 	}
 
-	/** Returns an IntSet for the states in the given SCC */
-	public IntSet getStatesForSCC(final int sccIndex)
+	/** Returns an NatBitSet for the states in the given SCC */
+	public NatSet getStatesForSCC(final int sccIndex)
 	{
 		checkSCCIndex(sccIndex);
 
 		final int start = startOfSCC(sccIndex);
 		final int end = endOfSCC(sccIndex);
 
-		return new IntSet() {
-
-			@Override
-			public OfInt iterator()
-			{
-				return new OfInt() {
-					int cur = start;
-
-					@Override
-					public boolean hasNext()
-					{
-						return cur <= end;
-					}
-
-					@Override
-					public int nextInt()
-					{
-						return stateList[cur++];
-					}
-				};
-			}
-
-			@Override
-			public OfInt reversedIterator()
-			{
-				return new OfInt() {
-					int cur = end;
-
-					@Override
-					public boolean hasNext()
-					{
-						return cur >= start;
-					}
-
-					@Override
-					public int nextInt()
-					{
-						return stateList[cur--];
-					}
-				};
-			}
-
-			@Override
-			public int cardinality()
-			{
-				return getNumStatesInSCC(sccIndex);
-			}
-
-			@Override
-			public boolean contains(int stateIndex)
-			{
-				int sccForState = getSCCIndex(stateIndex);
-				return sccForState == sccIndex;
-			}
-		};
+		return new SccStateSet(start, end, sccIndex);
 	}
 
 	/** Prints the SCC info to the log */
@@ -238,5 +186,78 @@ public class SCCInfo implements SCCConsumer
 	private int endOfSCC(int sccIndex)
 	{
 		return sccEnd[sccIndex];
+	}
+
+	private class SccStateSet extends AbstractUnmodifiableNatSet
+	{
+		private final int start;
+		private final int end;
+		private final int sccIndex;
+
+		SccStateSet(int start, int end, int sccIndex)
+		{
+			this.start = start;
+			this.end = end;
+			this.sccIndex = sccIndex;
+		}
+
+		public SccStateSet clone() throws CloneNotSupportedException
+		{
+			return (SccStateSet) super.clone();
+		}
+
+		@Override
+		public IntIterator iterator()
+		{
+			// TODO IntIterators.fromTo + mappingIterator
+			return new IntIterator() {
+				int cur = start;
+
+				@Override
+				public boolean hasNext()
+				{
+					return cur <= end;
+				}
+
+				@Override
+				public int nextInt()
+				{
+					return stateList[cur++];
+				}
+			};
+		}
+
+		@Override
+		public IntIterator reverseIterator()
+		{
+			return new IntIterator() {
+				int cur = end;
+
+				@Override
+				public boolean hasNext()
+				{
+					return cur >= start;
+				}
+
+				@Override
+				public int nextInt()
+				{
+					return stateList[cur--];
+				}
+			};
+		}
+
+		@Override
+		public int size()
+		{
+			return getNumStatesInSCC(sccIndex);
+		}
+
+		@Override
+		public boolean contains(int stateIndex)
+		{
+			int sccForState = getSCCIndex(stateIndex);
+			return sccForState == sccIndex;
+		}
 	}
 }

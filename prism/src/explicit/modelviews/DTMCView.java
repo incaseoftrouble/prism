@@ -1,54 +1,46 @@
 //==============================================================================
-//	
+//
 //	Copyright (c) 2016-
 //	Authors:
 //	* Steffen Maercker <maercker@tcs.inf.tu-dresden.de> (TU Dresden)
 //	* Joachim Klein <klein@tcs.inf.tu-dresden.de> (TU Dresden)
-//	
+//
 //------------------------------------------------------------------------------
-//	
+//
 //	This file is part of PRISM.
-//	
+//
 //	PRISM is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
 //	the Free Software Foundation; either version 2 of the License, or
 //	(at your option) any later version.
-//	
+//
 //	PRISM is distributed in the hope that it will be useful,
 //	but WITHOUT ANY WARRANTY; without even the implied warranty of
 //	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //	GNU General Public License for more details.
-//	
+//
 //	You should have received a copy of the GNU General Public License
 //	along with PRISM; if not, write to the Free Software Foundation,
 //	Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-//	
+//
 //==============================================================================
 
 package explicit.modelviews;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.AbstractMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.PrimitiveIterator;
-import java.util.TreeMap;
-import java.util.function.IntFunction;
-
-import common.IteratorTools;
 import common.IterableStateSet;
+import common.IteratorTools;
 import common.iterable.MappingIterator;
 import explicit.DTMC;
 import explicit.Distribution;
 import explicit.SuccessorsIterator;
 import explicit.graphviz.Decorator;
-import prism.ModelType;
-import prism.Pair;
-import prism.PrismException;
-import prism.PrismLog;
-import prism.PrismUtils;
+import prism.*;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.function.IntFunction;
 
 /**
  * Base class for a DTMC view, i.e., a virtual DTMC that is obtained
@@ -78,15 +70,11 @@ public abstract class DTMCView extends ModelView implements DTMC, Cloneable
 	@Override
 	public String toString()
 	{
-		final IntFunction<Entry<Integer, Distribution>> getDistribution = new IntFunction<Entry<Integer, Distribution>>()
-		{
-			@Override
-			public final Entry<Integer, Distribution> apply(final int state)
-			{
-				final Distribution distribution = new Distribution(getTransitionsIterator(state));
-				return new AbstractMap.SimpleImmutableEntry<>(state, distribution);
-			}
+		final IntFunction<Entry<Integer, Distribution>> getDistribution = state -> {
+			final Distribution distribution = new Distribution(getTransitionsIterator(state));
+			return new AbstractMap.SimpleImmutableEntry<>(state, distribution);
 		};
+
 		String s = "trans: [ ";
 		final IterableStateSet states = new IterableStateSet(getNumStates());
 		final Iterator<Entry<Integer, Distribution>> distributions = new MappingIterator.FromInt<>(states, getDistribution);
@@ -231,7 +219,7 @@ public abstract class DTMCView extends ModelView implements DTMC, Cloneable
 	//--- ModelView ---
 
 	/**
-	 * @see explicit.DTMCExplicit#exportTransitionsToDotFile(int, PrismLog) DTMCExplicit
+	 * @see explicit.DTMCExplicit#exportTransitionsToDotFile(int, PrismLog, Iterable) DTMCExplicit
 	 **/
 	@Override
 	public void exportTransitionsToDotFile(int i, PrismLog out, Iterable<explicit.graphviz.Decorator> decorators)

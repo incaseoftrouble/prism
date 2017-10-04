@@ -1,65 +1,55 @@
 //==============================================================================
-//	
+//
 //	Copyright (c) 2002-
 //	Authors:
 //	* Dave Parker <david.parker@comlab.ox.ac.uk> (University of Oxford)
-//	
+//
 //------------------------------------------------------------------------------
-//	
+//
 //	This file is part of PRISM.
-//	
+//
 //	PRISM is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
 //	the Free Software Foundation; either version 2 of the License, or
 //	(at your option) any later version.
-//	
+//
 //	PRISM is distributed in the hope that it will be useful,
 //	but WITHOUT ANY WARRANTY; without even the implied warranty of
 //	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //	GNU General Public License for more details.
-//	
+//
 //	You should have received a copy of the GNU General Public License
 //	along with PRISM; if not, write to the Free Software Foundation,
 //	Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-//	
+//
 //==============================================================================
 
 package explicit;
 
-import java.io.File;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.PrimitiveIterator;
-import java.util.Vector;
-
-import parser.VarList;
-import parser.ast.Declaration;
-import parser.ast.DeclarationIntUnbounded;
-import parser.ast.Expression;
-import prism.OptionsIntervalIteration;
-import prism.Prism;
-import prism.PrismComponent;
-import prism.PrismException;
-import prism.PrismFileLog;
-import prism.PrismNotSupportedException;
-import prism.PrismSettings;
-import prism.PrismUtils;
 import acceptance.AcceptanceReach;
 import acceptance.AcceptanceType;
 import automata.DA;
-import common.IntSet;
-import common.StopWatch;
 import common.IterableBitSet;
+import common.StopWatch;
+import de.tum.in.naturals.set.NatBitSet;
+import de.tum.in.naturals.set.NatBitSets;
+import de.tum.in.naturals.set.NatSet;
 import explicit.LTLModelChecker.LTLProduct;
 import explicit.modelviews.DTMCAlteredDistributions;
 import explicit.modelviews.MDPFromDTMC;
 import explicit.rewards.MCRewards;
 import explicit.rewards.MDPRewards;
 import explicit.rewards.Rewards;
+import parser.VarList;
+import parser.ast.Declaration;
+import parser.ast.DeclarationIntUnbounded;
+import parser.ast.Expression;
+import prism.*;
+
+import java.io.File;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.function.IntConsumer;
 
 /**
  * Explicit-state model checker for discrete-time Markov chains (DTMCs).
@@ -114,7 +104,7 @@ public class DTMCModelChecker extends ProbModelChecker
 			product.getProductModel().exportStates(Prism.EXPORT_PLAIN, newVarList, out);
 			out.close();
 		}
-		
+
 		// Find accepting states + compute reachability probabilities
 		BitSet acc;
 		if (product.getAcceptance() instanceof AcceptanceReach) {
@@ -127,7 +117,7 @@ public class DTMCModelChecker extends ProbModelChecker
 		mainLog.println("\nComputing reachability probabilities...");
 		mcProduct = new DTMCModelChecker(this);
 		mcProduct.inheritSettings(this);
-		ModelCheckerResult res = mcProduct.computeReachProbs(product.getProductModel(), acc); 
+		ModelCheckerResult res = mcProduct.computeReachProbs(product.getProductModel(), acc);
 		probsProduct = StateValues.createFromDoubleArray(res.soln, product.getProductModel());
 
 		// Output vector over product, if required
@@ -137,7 +127,7 @@ public class DTMCModelChecker extends ProbModelChecker
 				probsProduct.print(out, false, false, false, false);
 				out.close();
 		}
-		
+
 		// Mapping probabilities in the original model
 		probs = product.projectToOriginalModel(probsProduct);
 		probsProduct.clear();
@@ -214,7 +204,7 @@ public class DTMCModelChecker extends ProbModelChecker
 
 		return rewards;
 	}
-	
+
 	public ModelCheckerResult computeInstantaneousRewards(DTMC dtmc, MCRewards mcRewards, int k, BitSet statesOfInterest) throws PrismException
 	{
 		if (statesOfInterest.cardinality() == 1) {
@@ -223,7 +213,7 @@ public class DTMCModelChecker extends ProbModelChecker
 			return computeInstantaneousRewardsBackwards(dtmc, mcRewards, k);
 		}
 	}
-	
+
 	public ModelCheckerResult computeInstantaneousRewardsBackwards(DTMC dtmc, MCRewards mcRewards, int k) throws PrismException
 	{
 		ModelCheckerResult res = null;
@@ -273,13 +263,13 @@ public class DTMCModelChecker extends ProbModelChecker
 
 	public ModelCheckerResult computeInstantaneousRewardsForwards(DTMC dtmc, MCRewards mcRewards, int k, int stateOfInterest) throws PrismException
 	{
-		// Build a point probability distribution for the required state  
+		// Build a point probability distribution for the required state
 		double[] initDist = new double[dtmc.getNumStates()];
 		initDist[stateOfInterest] = 1.0;
-		
+
 		// Compute (forward) transient probabilities
 		ModelCheckerResult res = computeTransientProbs(dtmc, k, initDist);
-		
+
 		// Compute expected value (from initial state)
 		int n = dtmc.getNumStates();
 		double avg = 0.0;
@@ -292,10 +282,10 @@ public class DTMCModelChecker extends ProbModelChecker
 			res.soln[i] = 0.0;
 		}
 		res.soln[stateOfInterest] = avg;
-		
+
 		return res;
 	}
-	
+
 	public ModelCheckerResult computeCumulativeRewards(DTMC dtmc, MCRewards mcRewards, double t) throws PrismException
 	{
 		ModelCheckerResult res = null;
@@ -399,7 +389,7 @@ public class DTMCModelChecker extends ProbModelChecker
 		inf.flip(0, n);
 		int numInf = inf.cardinality();
 		mainLog.println("inf=" + numInf + ", maybe=" + (n - numInf));
-		
+
 		// Compute rewards
 		// (do this using the functions for "reward reachability" properties but with no targets)
 		switch (linEqMethod) {
@@ -446,7 +436,7 @@ public class DTMCModelChecker extends ProbModelChecker
 	 * Optionally, use the passed in vector initDist as the initial probability distribution (time 0).
 	 * If null, start from initial state (or uniform distribution over multiple initial states).
 	 * For reasons of efficiency, when a vector is passed in, it will be trampled over,
-	 * so if you wanted it, take a copy. 
+	 * so if you wanted it, take a copy.
 	 * @param dtmc The DTMC
 	 * @param initDist Initial distribution (will be overwritten)
 	 */
@@ -485,7 +475,7 @@ public class DTMCModelChecker extends ProbModelChecker
 	 * Optionally, use the passed in vector initDist as the initial probability distribution (time step 0).
 	 * If null, start from initial state (or uniform distribution over multiple initial states).
 	 * For reasons of efficiency, when a vector is passed in, it will be trampled over,
-	 * so if you wanted it, take a copy. 
+	 * so if you wanted it, take a copy.
 	 * @param dtmc The DTMC
 	 * @param k Time step
 	 * @param initDist Initial distribution (will be overwritten)
@@ -521,7 +511,7 @@ public class DTMCModelChecker extends ProbModelChecker
 		soln = Utils.bitsetToDoubleArray(target, n);
 		soln2 = new double[n];
 
-		// Next-step probabilities 
+		// Next-step probabilities
 		dtmc.mvMult(soln, soln2, null, false);
 
 		// Return results
@@ -590,9 +580,9 @@ public class DTMCModelChecker extends ProbModelChecker
 	 * @param dtmc The DTMC
 	 * @param remain Remain in these states (optional: null means "all")
 	 * @param target Target states
-	 * @param init Optionally, an initial solution vector (may be overwritten) 
+	 * @param init Optionally, an initial solution vector (may be overwritten)
 	 * @param known Optionally, a set of states for which the exact answer is known
-	 * Note: if 'known' is specified (i.e. is non-null, 'init' must also be given and is used for the exact values.  
+	 * Note: if 'known' is specified (i.e. is non-null, 'init' must also be given and is used for the exact values.
 	 */
 	public ModelCheckerResult computeReachProbs(DTMC dtmc, BitSet remain, BitSet target, double init[], BitSet known) throws PrismException
 	{
@@ -1024,7 +1014,7 @@ public class DTMCModelChecker extends ProbModelChecker
 
 		// Initialise solution vectors. Use (where available) the following in order of preference:
 		// (1) exact answer, if already known; (2) 1.0/0.0 if in yes/no; (3) passed in initial value; (4) initVal
-		// where initVal is 0.0 or 1.0, depending on whether we converge from below/above. 
+		// where initVal is 0.0 or 1.0, depending on whether we converge from below/above.
 		initVal = (valIterDir == ValIterDir.BELOW) ? 0.0 : 1.0;
 		if (init != null) {
 			if (known != null) {
@@ -1054,7 +1044,7 @@ public class DTMCModelChecker extends ProbModelChecker
 		if (iterationsExport != null)
 			iterationsExport.exportVector(init, 0);
 
-		IntSet unknownStates = IntSet.asIntSet(unknown);
+		NatBitSet unknownStates = NatBitSets.asSet(unknown);
 
 		if (topological) {
 			// Compute SCCInfo, including trivial SCCs in the subgraph obtained when only considering
@@ -1108,7 +1098,7 @@ public class DTMCModelChecker extends ProbModelChecker
 	 * @param dtmc The DTMC
 	 * @param no Probability 0 states
 	 * @param yes Probability 1 states
-	 * @param init Optionally, an initial solution vector (will be overwritten) 
+	 * @param init Optionally, an initial solution vector (will be overwritten)
 	 * @param known Optionally, a set of states for which the exact answer is known
 	 * Note: if 'known' is specified (i.e. is non-null, 'init' must also be given and is used for the exact values.
 	 * @param backwards do backward Gauss-Seidel?
@@ -1181,7 +1171,7 @@ public class DTMCModelChecker extends ProbModelChecker
 			iterationsExport.exportVector(initAbove, 1);
 		}
 
-		IntSet unknownStates = IntSet.asIntSet(unknown);
+		NatBitSet unknownStates = NatBitSets.asSet(unknown);
 
 		OptionsIntervalIteration iiOptions = OptionsIntervalIteration.from(this);
 
@@ -1441,9 +1431,9 @@ public class DTMCModelChecker extends ProbModelChecker
 
 		double q = 0;
 		for (int scc = 0, numSCCs = sccs.getNumSCCs(); scc < numSCCs; scc++) {
-			IntSet statesForSCC = sccs.getStatesForSCC(scc);
+			NatSet statesForSCC = sccs.getStatesForSCC(scc);
 
-			int cardinality = statesForSCC.cardinality();
+			int cardinality = statesForSCC.size();
 
 			PrimitiveIterator.OfInt itSCC = statesForSCC.iterator();
 			while (itSCC.hasNext()) {
@@ -1461,7 +1451,7 @@ public class DTMCModelChecker extends ProbModelChecker
 				boolean hasSelfloop = false;
 				for (Iterator<Entry<Integer, Double>> it = dtmc.getTransitionsIterator(s); it.hasNext(); ) {
 					Entry<Integer, Double> t = it.next();
-					if (statesForSCC.get(t.getKey())) {
+					if (statesForSCC.contains(t.getKey().intValue())) {
 						probRemain += t.getValue();
 						hasSelfloop = true;
 					} else {
@@ -1546,11 +1536,11 @@ public class DTMCModelChecker extends ProbModelChecker
 		BitSet trivial = new BitSet();
 
 		for (int scc = 0, numSCCs = sccs.getNumSCCs(); scc < numSCCs; scc++) {
-			IntSet statesForSCC = sccs.getStatesForSCC(scc);
+			NatSet statesForSCC = sccs.getStatesForSCC(scc);
 
 			double q = 0;
 			double p = 1;
-			int cardinality = statesForSCC.cardinality();
+			int cardinality = statesForSCC.size();
 
 			PrimitiveIterator.OfInt itSCC = statesForSCC.iterator();
 			while (itSCC.hasNext()) {
@@ -1562,7 +1552,7 @@ public class DTMCModelChecker extends ProbModelChecker
 				boolean hasSelfloop = false;
 				for (Iterator<Entry<Integer, Double>> it = dtmc.getTransitionsIterator(s); it.hasNext(); ) {
 					Entry<Integer, Double> t = it.next();
-					if (statesForSCC.get(t.getKey())) {
+					if (statesForSCC.contains(t.getKey().intValue())) {
 						probRemain += t.getValue();
 						p = Math.min(p, t.getValue());
 						hasSelfloop = true;
@@ -1581,10 +1571,12 @@ public class DTMCModelChecker extends ProbModelChecker
 				}
 			}
 
-			for (int s : statesForSCC) {
-				qt[s] = q;
-				pt[s] = p;
-			}
+			double finalQ = q;
+			double finalP = p;
+			statesForSCC.forEach((IntConsumer) s -> {
+				qt[s] = finalQ;
+				pt[s] = finalP;
+			});
 		}
 
 		double upperBound = 0;
@@ -1732,7 +1724,7 @@ public class DTMCModelChecker extends ProbModelChecker
 	 * @param target Target states
 	 * @param init Optionally, an initial solution vector (may be overwritten)
 	 * @param known Optionally, a set of states for which the exact answer is known
-	 * Note: if 'known' is specified (i.e. is non-null, 'init' must also be given and is used for the exact values.  
+	 * Note: if 'known' is specified (i.e. is non-null, 'init' must also be given and is used for the exact values.
 	 */
 	public ModelCheckerResult computeReachRewards(DTMC dtmc, MCRewards mcRewards, BitSet target, double init[], BitSet known) throws PrismException
 	{
@@ -1996,7 +1988,7 @@ public class DTMCModelChecker extends ProbModelChecker
 		if (iterationsExport != null)
 			iterationsExport.exportVector(init, 0);
 
-		IntSet unknownStates = IntSet.asIntSet(unknown);
+		NatBitSet unknownStates = NatBitSets.asSet(unknown);
 		IterationMethod.IterationValIter forMvMultRew = iterationMethod.forMvMultRew(dtmc, mcRewards);
 		forMvMultRew.init(init);
 
@@ -2105,7 +2097,7 @@ public class DTMCModelChecker extends ProbModelChecker
 			iterationsExport.exportVector(init_above, 1);
 		}
 
-		IntSet unknownStates = IntSet.asIntSet(unknown);
+		NatBitSet unknownStates = NatBitSets.asSet(unknown);
 
 		final boolean enforceMonotonicFromBelow = iiOptions.isEnforceMonotonicityFromBelow();
 		final boolean enforceMonotonicFromAbove = iiOptions.isEnforceMonotonicityFromAbove();
@@ -2152,9 +2144,9 @@ public class DTMCModelChecker extends ProbModelChecker
 	/**
 	 * Compute (forwards) steady-state probabilities
 	 * i.e. compute the long-run probability of being in each state,
-	 * assuming the initial distribution {@code initDist}. 
-	 * For space efficiency, the initial distribution vector will be modified and values over-written,  
-	 * so if you wanted it, take a copy. 
+	 * assuming the initial distribution {@code initDist}.
+	 * For space efficiency, the initial distribution vector will be modified and values over-written,
+	 * so if you wanted it, take a copy.
 	 * @param dtmc The DTMC
 	 * @param initDist Initial distribution (will be overwritten)
 	 */
@@ -2187,7 +2179,7 @@ public class DTMCModelChecker extends ProbModelChecker
 			if (initDist[i] == 0)
 				startNot.set(i);
 		}
-		// Determine whether initial states are all in a single BSCC 
+		// Determine whether initial states are all in a single BSCC
 		allInOneBSCC = -1;
 		for (int b = 0; b < numBSCCs; b++) {
 			if (!bsccs.get(b).intersects(startNot)) {
@@ -2207,7 +2199,7 @@ public class DTMCModelChecker extends ProbModelChecker
 		// Otherwise, have to consider all the BSCCs
 		else {
 
-			// Compute probability of reaching each BSCC from initial distribution 
+			// Compute probability of reaching each BSCC from initial distribution
 			probBSCCs = new double[numBSCCs];
 			for (int b = 0; b < numBSCCs; b++) {
 				mainLog.println("\nComputing probability of reaching BSCC " + (b + 1));
@@ -2223,7 +2215,7 @@ public class DTMCModelChecker extends ProbModelChecker
 				mainLog.print("\nProbability of reaching BSCC " + (b + 1) + ": " + probBSCCs[b] + "\n");
 			}
 
-			// Compute steady-state probabilities for each BSCC 
+			// Compute steady-state probabilities for each BSCC
 			for (int b = 0; b < numBSCCs; b++) {
 				mainLog.println("\nComputing steady-state probabilities for BSCC " + (b + 1));
 				bscc = bsccs.get(b);
@@ -2411,9 +2403,9 @@ public class DTMCModelChecker extends ProbModelChecker
 	/**
 	 * Compute transient probabilities
 	 * i.e. compute the probability of being in each state at time step {@code k},
-	 * assuming the initial distribution {@code initDist}. 
-	 * For space efficiency, the initial distribution vector will be modified and values over-written,  
-	 * so if you wanted it, take a copy. 
+	 * assuming the initial distribution {@code initDist}.
+	 * For space efficiency, the initial distribution vector will be modified and values over-written,
+	 * so if you wanted it, take a copy.
 	 * @param dtmc The DTMC
 	 * @param k Time step
 	 * @param initDist Initial distribution (will be overwritten)
@@ -2497,7 +2489,7 @@ public class DTMCModelChecker extends ProbModelChecker
 
 				// 2. Build DTMC directly
 				//    Run as: PRISM_MAINCLASS=explicit.DTMCModelChecker bin/prism
-				//    (example taken from p.14 of Lec 5 of http://www.prismmodelchecker.org/lectures/pmc/) 
+				//    (example taken from p.14 of Lec 5 of http://www.prismmodelchecker.org/lectures/pmc/)
 				mc = new DTMCModelChecker(null);
 				dtmc = new DTMCSimple(6);
 				dtmc.setProbability(0, 1, 0.1);

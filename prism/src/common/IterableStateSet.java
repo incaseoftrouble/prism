@@ -1,50 +1,52 @@
 //==============================================================================
-//	
+//
 //	Copyright (c) 2014-
 //	Authors:
 //	* Joachim Klein <klein@tcs.inf.tu-dresden.de> (TU Dresden)
 //	* Steffen Märcker <maercker@tcs.inf.tu-dresden.de> (TU Dresden)
-//	
+//
 //------------------------------------------------------------------------------
-//	
+//
 //	This file is part of PRISM.
-//	
+//
 //	PRISM is free software; you can redistribute it and/or modify
 //	it under the terms of the GNU General Public License as published by
 //	the Free Software Foundation; either version 2 of the License, or
 //	(at your option) any later version.
-//	
+//
 //	PRISM is distributed in the hope that it will be useful,
 //	but WITHOUT ANY WARRANTY; without even the implied warranty of
 //	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //	GNU General Public License for more details.
-//	
+//
 //	You should have received a copy of the GNU General Public License
 //	along with PRISM; if not, write to the Free Software Foundation,
 //	Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-//	
+//
 //==============================================================================
 
 
 package common;
 
-import java.util.BitSet;
-import java.util.PrimitiveIterator.OfInt;
+import common.iterable.RangeIntIterable;
+import it.unimi.dsi.fastutil.ints.IntIterable;
+import it.unimi.dsi.fastutil.ints.IntIterator;
+import it.unimi.dsi.fastutil.ints.IntSets;
 
-import common.iterable.*;
+import java.util.BitSet;
 
 /**
  * A convenience wrapper around IterableBitSet that handles the three cases of
  * iterating over the set or cleared bits of a BitSet representing a set of states
  * as well as iterating over all states if the BitSet is {@code null}.
  */
-public class IterableStateSet implements IterableInt
+public class IterableStateSet implements IntIterable
 {
-	private final IterableInt setOfStates;
+	private final IntIterable setOfStates;
 
 	/**
 	 * Constructor (iterate over all states 0..numStates-1)
-	 * 
+	 *
 	 * @param numStates the number of states in the model, i.e., with indices 0..numStates-1
 	 */
 	public IterableStateSet(int numStates)
@@ -54,7 +56,7 @@ public class IterableStateSet implements IterableInt
 
 	/**
 	 * Constructor (iterate over the sets given by setOfStates or over all states)
-	 * 
+	 *
 	 * @param setOfStates the BitSet representing state indices in the model.
 	 *                    {@code null} signifies "all states in the model"
 	 * @param numStates the number of states in the model, i.e., with indices 0..numStates-1
@@ -91,7 +93,7 @@ public class IterableStateSet implements IterableInt
 		if (setOfStates == null || (setOfStates.length() == numStates && setOfStates.cardinality() == numStates)) {
 			// all states
 			if (complement) {
-				this.setOfStates = EmptyIterable.OfInt();
+				this.setOfStates = IntSets.EMPTY_SET;
 			} else {
 				this.setOfStates = reversed ? new RangeIntIterable(numStates-1, 0) : new RangeIntIterable(0, numStates-1);
 			}
@@ -100,7 +102,7 @@ public class IterableStateSet implements IterableInt
 			if (complement) {
 				this.setOfStates = reversed ? new RangeIntIterable(numStates-1, 0) : new RangeIntIterable(0, numStates-1);
 			} else {
-				this.setOfStates = EmptyIterable.OfInt();
+				this.setOfStates = IntSets.EMPTY_SET;
 			}
 		} else {
 			// build appropriate IterableBitSet with maxIndex = numStates-1
@@ -109,7 +111,7 @@ public class IterableStateSet implements IterableInt
 	}
 
 	@Override
-	public OfInt iterator()
+	public IntIterator iterator()
 	{
 		return setOfStates.iterator();
 	}
